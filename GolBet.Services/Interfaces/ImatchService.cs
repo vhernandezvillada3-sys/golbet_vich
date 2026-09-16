@@ -8,4 +8,7 @@ public interface IMatchService
 {
     /// <summary>Match board: all active matches ordered by date.</summary>
     Task<IEnumerable<MatchDto>> GetBoardAsync(MatchStatus? status = null);
+
+    /// <summary>Full match detail with teams and bet count.</summary>
+    Task<MatchDetailDto?> GetDetailAsync(int id);
 }
