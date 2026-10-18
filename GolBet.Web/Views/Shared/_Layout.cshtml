@@ -31,12 +31,16 @@
                             <a class="nav-link" asp-controller="Teams" asp-action="Index">Equipos</a>
                         </li>
                     </ul>
+                    
+                    <!-- AQUÍ ESTÁ LA VISTA PARCIAL DEL LOGIN -->
+                    <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+            <!-- AQUÍ ESTÁ EL MENSAJE DE ÉXITO (TEMP DATA) -->
             @if (TempData["Success"] is string message)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -44,6 +48,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
+            
+            <!-- AQUÍ ESTÁ EL HUECO MÁGICO PARA LAS VISTAS -->
             @RenderBody()
         </main>
     </div>

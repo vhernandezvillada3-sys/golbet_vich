@@ -20,10 +20,11 @@ public class MatchService : IMatchService
         _mapper = mapper;
     }
 
-    // --- Módulo 4 y 5 ---
-    public async Task<IEnumerable<MatchDto>> GetBoardAsync(MatchStatus? status = null)
+    // --- Board & Detail (Modules 4 & 5) ---
+    public async Task<IEnumerable<MatchDto>> GetBoardAsync(MatchStatus? status = null, string? search = null)
     {
-        var matches = await _matchRepository.GetAllWithTeamsAsync(status);
+        // Pass both parameters to the repository
+        var matches = await _matchRepository.GetAllWithTeamsAsync(status, search);
         return _mapper.Map<IEnumerable<MatchDto>>(matches);
     }
 
@@ -33,14 +34,14 @@ public class MatchService : IMatchService
         return match is null ? null : _mapper.Map<MatchDetailDto>(match);
     }
 
-    // --- Módulo 6 (Escritura) ---
+    // --- Write Operations (Module 6) ---
     public async Task<MatchFormDto?> GetForEditAsync(int id)
     {
         var match = await _matchRepository.GetByIdAsync(id);
         if (match is null) return null;
 
         var dto = _mapper.Map<MatchFormDto>(match);
-        dto.Date = dto.Date.ToColombiaTime(); // UTC (BD) -> Colombia (Formulario)
+        dto.Date = dto.Date.ToColombiaTime(); // Convert UTC to Colombia time for the form
         return dto;
     }
 
@@ -49,7 +50,7 @@ public class MatchService : IMatchService
         ValidateBusinessRules(dto);
 
         var match = _mapper.Map<Match>(dto);
-        match.Date = dto.Date.ToUtcFromColombia(); // Colombia (Formulario) -> UTC (BD)
+        match.Date = dto.Date.ToUtcFromColombia(); // Convert Colombia time to UTC for DB
 
         await _matchRepository.AddAsync(match);
     }
@@ -62,7 +63,7 @@ public class MatchService : IMatchService
             ?? throw new KeyNotFoundException($"Match {dto.Id} not found.");
 
         _mapper.Map(dto, match);
-        match.Date = dto.Date.ToUtcFromColombia(); // Colombia (Formulario) -> UTC (BD)
+        match.Date = dto.Date.ToUtcFromColombia(); // Convert Colombia time to UTC for DB
 
         await _matchRepository.UpdateAsync(match);
     }
@@ -72,7 +73,7 @@ public class MatchService : IMatchService
         await _matchRepository.DeactivateAsync(id);
     }
 
-    // --- Reglas de negocio ---
+    // --- Business Rules ---
     private static void ValidateBusinessRules(MatchFormDto dto)
     {
         if (dto.HomeTeamId == dto.AwayTeamId)

@@ -18,10 +18,11 @@ public class Bet : AuditableEntity
 
     public BetStatus Status { get; set; } = BetStatus.Pending;
 
+    // Relación con Partido
     public int MatchId { get; set; }
-
-    // Navigation Property
     public Match Match { get; set; } = null!;
 
-    // Module 7 will add:  public string UserId  +  AppUser User
+    // Relación con Usuario (NUEVO MÓDULO 7)
+    public string UserId { get; set; } = null!;
+    public AppUser User { get; set; } = null!;
 }

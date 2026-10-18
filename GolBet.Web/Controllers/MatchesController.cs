@@ -2,6 +2,7 @@
 using GolBet.Entities.Enums;
 using GolBet.Services.DTOs;
 using GolBet.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -10,7 +11,7 @@ namespace GolBet.Web.Controllers;
 public class MatchesController : Controller
 {
     private readonly IMatchService _matchService;
-    private readonly ITeamService _teamService; // Inyectamos el servicio de equipos para los dropdowns
+    private readonly ITeamService _teamService;
 
     public MatchesController(IMatchService matchService, ITeamService teamService)
     {
@@ -19,10 +20,14 @@ public class MatchesController : Controller
     }
 
     // GET /Matches
-    public async Task<IActionResult> Index(MatchStatus? status)
+    // GET /Matches?status=Scheduled
+    // GET /Matches?search=nacional
+    public async Task<IActionResult> Index(MatchStatus? status, string? search)
     {
         ViewBag.CurrentStatus = status;
-        var board = await _matchService.GetBoardAsync(status);
+        ViewBag.CurrentSearch = search; // Pass search to view to keep it in the input
+
+        var board = await _matchService.GetBoardAsync(status, search);
         return View(board);
     }
 
@@ -35,19 +40,21 @@ public class MatchesController : Controller
     }
 
     // GET /Matches/Create
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Create()
     {
-        await LoadTeamsAsync(); // Carga los equipos en el ViewBag
+        await LoadTeamsAsync();
         return View(new MatchFormDto());
     }
 
     // POST /Matches/Create
     [HttpPost, ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Create(MatchFormDto dto)
     {
         if (!ModelState.IsValid)
         {
-            await LoadTeamsAsync(); // Si hay error, recarga los dropdowns
+            await LoadTeamsAsync();
             return View(dto);
         }
 
@@ -57,7 +64,7 @@ public class MatchesController : Controller
             TempData["Success"] = "Partido creado correctamente.";
             return RedirectToAction(nameof(Index));
         }
-        catch (InvalidOperationException ex) // Captura errores de reglas de negocio
+        catch (InvalidOperationException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             await LoadTeamsAsync();
@@ -66,6 +73,7 @@ public class MatchesController : Controller
     }
 
     // GET /Matches/Edit/5
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Edit(int id)
     {
         var dto = await _matchService.GetForEditAsync(id);
@@ -77,6 +85,7 @@ public class MatchesController : Controller
 
     // POST /Matches/Edit
     [HttpPost, ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Edit(MatchFormDto dto)
     {
         if (!ModelState.IsValid)
@@ -101,6 +110,7 @@ public class MatchesController : Controller
 
     // POST /Matches/Deactivate/5
     [HttpPost, ValidateAntiForgeryToken]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Deactivate(int id)
     {
         await _matchService.DeactivateAsync(id);
@@ -108,7 +118,6 @@ public class MatchesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // Método auxiliar para llenar los dropdowns
     private async Task LoadTeamsAsync()
     {
         var teams = await _teamService.GetAllAsync();

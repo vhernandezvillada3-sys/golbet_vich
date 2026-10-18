@@ -1,16 +1,25 @@
-﻿// GolBet.Repositories/Data/DbSeeder.cs
-using GolBet.Entities;
+﻿using GolBet.Entities;
 using GolBet.Entities.Enums;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace GolBet.Repositories.Data;
 
 public static class DbSeeder
 {
-    public static async Task SeedAsync(AppDbContext context)
+    // 1. CAMBIO: Ahora recibe los managers de Identity
+    public static async Task SeedAsync(
+        AppDbContext context,
+        UserManager<AppUser> userManager,
+        RoleManager<IdentityRole> roleManager)
     {
-        // Applies any pending migration (creates the DB if it does not exist)
+        // Aplica migraciones pendientes
         await context.Database.MigrateAsync();
+
+        // 2. CAMBIO: Sembramos la seguridad PRIMERO
+        await SeedIdentityAsync(userManager, roleManager);
+
+        // --- A PARTIR DE AQUÍ ES TU CÓDIGO ORIGINAL ---
 
         if (await context.Teams.AnyAsync()) return;   // idempotence guard
 
@@ -87,5 +96,37 @@ public static class DbSeeder
 
         context.Matches.AddRange(matches);
         await context.SaveChangesAsync();
+    }
+
+    // 3. NUEVO MÉTODO: Crear Roles y Usuario Admin
+    private static async Task SeedIdentityAsync(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
+    {
+        string[] roleNames = { "admin", "betor" };
+        foreach (var roleName in roleNames)
+        {
+            if (!await roleManager.RoleExistsAsync(roleName))
+            {
+                await roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+        }
+
+        string adminEmail = "admin@golbet.com";
+        if (await userManager.FindByEmailAsync(adminEmail) == null)
+        {
+            var adminUser = new AppUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                FullName = "Administrador del Sistema",
+                Balance = 0m
+            };
+
+            var result = await userManager.CreateAsync(adminUser, "Admin123");
+
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(adminUser, "admin");
+            }
+        }
     }
 }
