@@ -10,13 +10,18 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         // Flattening by convention:
-        // MatchDto.HomeTeamName <- Match.HomeTeam.Name
-        // MatchDto.AwayTeamCrestUrl <- Match.AwayTeam.CrestUrl
         CreateMap<Match, MatchDto>();
 
-        //Detail map: totalBets cannot be resolved by convenition
+        // Detail map: TotalBets cannot be resolved by convention
         CreateMap<Match, MatchDetailDto>()
-    .ForMember(dto => dto.TotalBets,
-               options => options.MapFrom(match => match.Bets.Count));
+            .ForMember(dto => dto.TotalBets,
+                       options => options.MapFrom(match => match.Bets.Count));
+
+        // Nuevos mapeos para el Módulo 6
+        CreateMap<Team, TeamDto>();
+
+        CreateMap<TeamFormDto, Team>().ReverseMap();
+
+        CreateMap<MatchFormDto, Match>().ReverseMap();
     }
 }
