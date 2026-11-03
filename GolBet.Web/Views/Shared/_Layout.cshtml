@@ -27,20 +27,34 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Matches" asp-action="Index">Partidos</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Teams" asp-action="Index">Equipos</a>
-                        </li>
+                        
+                        <!-- Equipos: Solo visible para Admin -->
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Teams" asp-action="Index">Equipos</a>
+                            </li>
+                        }
+
+                        <!-- Mis Apuestas: Solo visible para Apostador -->
+                        @if (User.IsInRole("Apostador"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Bets" asp-action="MyBets">Mis apuestas</a>
+                            </li>
+                        }
                     </ul>
                     
-                    <!-- AQUÍ ESTÁ LA VISTA PARCIAL DEL LOGIN -->
+                    <!-- Login Partial -->
                     <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
+    
     <div class="container">
         <main role="main" class="pb-3">
-            <!-- AQUÍ ESTÁ EL MENSAJE DE ÉXITO (TEMP DATA) -->
+            <!-- SUCCESS MESSAGE (TEMP DATA) -->
             @if (TempData["Success"] is string message)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -49,7 +63,16 @@
                 </div>
             }
             
-            <!-- AQUÍ ESTÁ EL HUECO MÁGICO PARA LAS VISTAS -->
+            <!-- ERROR MESSAGE (TEMP DATA) -->
+            @if (TempData["Error"] is string errorMessage)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    ⚠️ @errorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            
+            <!-- RENDER BODY -->
             @RenderBody()
         </main>
     </div>
@@ -59,6 +82,7 @@
             &copy; @DateTime.Now.Year - GolBet · Simulador académico
         </div>
     </footer>
+    
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

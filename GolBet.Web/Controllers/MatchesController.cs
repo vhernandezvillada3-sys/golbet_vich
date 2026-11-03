@@ -1,5 +1,6 @@
 ﻿// GolBet.Web/Controllers/MatchesController.cs
 using GolBet.Entities.Enums;
+using GolBet.Repositories.Data;
 using GolBet.Services.DTOs;
 using GolBet.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -20,12 +21,10 @@ public class MatchesController : Controller
     }
 
     // GET /Matches
-    // GET /Matches?status=Scheduled
-    // GET /Matches?search=nacional
     public async Task<IActionResult> Index(MatchStatus? status, string? search)
     {
         ViewBag.CurrentStatus = status;
-        ViewBag.CurrentSearch = search; // Pass search to view to keep it in the input
+        ViewBag.CurrentSearch = search;
 
         var board = await _matchService.GetBoardAsync(status, search);
         return View(board);
@@ -40,7 +39,7 @@ public class MatchesController : Controller
     }
 
     // GET /Matches/Create
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = DbSeeder.AdminRole)]
     public async Task<IActionResult> Create()
     {
         await LoadTeamsAsync();
@@ -49,7 +48,7 @@ public class MatchesController : Controller
 
     // POST /Matches/Create
     [HttpPost, ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = DbSeeder.AdminRole)]
     public async Task<IActionResult> Create(MatchFormDto dto)
     {
         if (!ModelState.IsValid)
@@ -73,7 +72,7 @@ public class MatchesController : Controller
     }
 
     // GET /Matches/Edit/5
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = DbSeeder.AdminRole)]
     public async Task<IActionResult> Edit(int id)
     {
         var dto = await _matchService.GetForEditAsync(id);
@@ -85,7 +84,7 @@ public class MatchesController : Controller
 
     // POST /Matches/Edit
     [HttpPost, ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = DbSeeder.AdminRole)]
     public async Task<IActionResult> Edit(MatchFormDto dto)
     {
         if (!ModelState.IsValid)
@@ -110,7 +109,7 @@ public class MatchesController : Controller
 
     // POST /Matches/Deactivate/5
     [HttpPost, ValidateAntiForgeryToken]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = DbSeeder.AdminRole)]
     public async Task<IActionResult> Deactivate(int id)
     {
         await _matchService.DeactivateAsync(id);

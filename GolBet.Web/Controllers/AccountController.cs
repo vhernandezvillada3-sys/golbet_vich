@@ -1,4 +1,5 @@
 ﻿using GolBet.Entities;
+using GolBet.Repositories.Data;
 using GolBet.Web.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +41,7 @@ public class AccountController : Controller
         if (result.Succeeded)
         {
             // Asignamos el rol de apostador
-            await _userManager.AddToRoleAsync(user, "betor");
+            await _userManager.AddToRoleAsync(user, DbSeeder.BettorRole);
 
             // Lo logueamos automáticamente después de registrarse
             await _signInManager.SignInAsync(user, isPersistent: false);

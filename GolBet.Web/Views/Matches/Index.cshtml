@@ -9,7 +9,15 @@
     var currentSearch = ViewBag.CurrentSearch as string;
 }
 
-<h2 class="mb-4">⚽ Cartelera de partidos</h2>
+<!-- HEADER WITH NEW MATCH BUTTON -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>⚽ Cartelera de partidos</h2>
+    
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-success">+ Nuevo partido</a>
+    }
+</div>
 
 <!-- SEARCH FORM (GET Request) -->
 <form method="get" asp-action="Index" class="d-flex mb-3" style="max-width: 400px;">

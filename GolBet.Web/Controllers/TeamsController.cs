@@ -1,4 +1,5 @@
 ﻿// GolBet.Web/Controllers/TeamsController.cs
+using GolBet.Repositories.Data;
 using GolBet.Services.DTOs;
 using GolBet.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -6,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GolBet.Web.Controllers;
 
-[Authorize(Roles = "admin")] // Restricts access to users with the 'admin' role
+[Authorize(Roles = DbSeeder.AdminRole)] // Usa la constante, no el string
 public class TeamsController : Controller
 {
     private readonly ITeamService _teamService;
@@ -30,13 +31,12 @@ public class TeamsController : Controller
     public async Task<IActionResult> Create(TeamFormDto dto)
     {
         if (!ModelState.IsValid)
-            return View(dto); // If validation fails, return the form with errors
+            return View(dto);
 
         await _teamService.CreateAsync(dto);
 
         TempData["Success"] = $"Equipo «{dto.Name}» creado correctamente.";
-
-        return RedirectToAction(nameof(Index)); // PRG: Redirect to the list to prevent duplicate submissions
+        return RedirectToAction(nameof(Index));
     }
 
     // GET /Teams/Edit/5
@@ -58,7 +58,6 @@ public class TeamsController : Controller
         await _teamService.UpdateAsync(dto);
 
         TempData["Success"] = $"Equipo «{dto.Name}» actualizado.";
-
         return RedirectToAction(nameof(Index));
     }
 
@@ -69,7 +68,6 @@ public class TeamsController : Controller
         await _teamService.DeactivateAsync(id);
 
         TempData["Success"] = "Equipo desactivado.";
-
         return RedirectToAction(nameof(Index));
     }
 }
